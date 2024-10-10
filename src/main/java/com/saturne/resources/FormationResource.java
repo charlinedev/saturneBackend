@@ -1,7 +1,6 @@
 package com.saturne.resources;
 
 import com.saturne.dto.FormationDTO;
-import com.saturne.entities.Formation;
 import com.saturne.services.FormationService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;

@@ -11,7 +11,6 @@ import com.saturne.entities.Chapitre;
 import com.saturne.exceptions.TrainingNotFoundException;
 import com.saturne.repositories.FormationRepository;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Named;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityNotFoundException;
