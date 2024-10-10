@@ -1,5 +1,8 @@
 package com.saturne.dto;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FormationDTO {
@@ -15,14 +18,19 @@ public class FormationDTO {
     private String programmeDetaille;
 
     private Set<ThemeDTO> themes;
-    private Set<ChapitreDTO> chapitres;
+    private List<ChapitreDTO> chapitres;
     private Set<SessionDTO> sessions;
-    // Constructors
-    public FormationDTO() {}
+
+    // Constructeur
+    public FormationDTO() {
+        this.themes = new HashSet<>();
+        this.chapitres = new ArrayList<>();
+        this.sessions = new HashSet<>();
+    }
 
     public FormationDTO (long idFormation, String reference, String titref, String lieu,
                         boolean interFormation, int duree, String prerequis,
-                        String objectif, String publicVise, String programmeDetaille, Set<ThemeDTO> themes, Set<ChapitreDTO> chapitres, Set<SessionDTO> sessions) {
+                        String objectif, String publicVise, String programmeDetaille, Set<ThemeDTO> themes, List<ChapitreDTO> chapitres, Set<SessionDTO> sessions) {
         this.idFormation = idFormation;
         this.reference = reference;
         this.titref = titref;
@@ -33,13 +41,12 @@ public class FormationDTO {
         this.objectif = objectif;
         this.publicVise = publicVise;
         this.programmeDetaille = programmeDetaille;
-        this.themes = themes;
-        this.chapitres = chapitres;
-        this.sessions = sessions;
+        this.themes = (themes != null) ? themes : new HashSet<>();
+        this.chapitres = (chapitres != null) ? chapitres : new ArrayList<>();
+        this.sessions = (sessions != null) ? sessions : new HashSet<>();
 
     }
 
-    // Getters and Setters
     public long getIdFormation() {
         return idFormation;
     }
@@ -128,11 +135,11 @@ public class FormationDTO {
         this.themes = themes;
     }
 
-    public Set<ChapitreDTO> getChapitres() {
+    public List<ChapitreDTO> getChapitres() {
         return chapitres;
     }
 
-    public void setChapitres(Set<ChapitreDTO> chapitres) {
+    public void setChapitres(List<ChapitreDTO> chapitres) {
         this.chapitres = chapitres;
     }
 

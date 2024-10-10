@@ -1,7 +1,6 @@
 package com.saturne.services;
 
 import com.saturne.dto.FormationDTO;
-import com.saturne.dto.FormationMapper;
 import com.saturne.entities.Formation;
 import com.saturne.dto.ThemeDTO;
 import com.saturne.entities.Theme;
@@ -12,8 +11,12 @@ import com.saturne.entities.Chapitre;
 import com.saturne.exceptions.TrainingNotFoundException;
 import com.saturne.repositories.FormationRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
+
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+
 
 import java.util.List;
 import java.util.Set;
@@ -26,23 +29,80 @@ public class FormationService {
   @Inject
   private FormationRepository formationRepo;
 
-  @Inject
-  private FormationMapper mapper;
-
   //Ajouter une formation
   @Transactional
   public FormationDTO addFormation(FormationDTO fDTO) {
-    //        if (f.getTitref().toLowerCase().contains("java")) {
-    //            f.getThemes().add(new Theme("Java"));
-    ////            f.getThemes().add(new Theme("POO"));
-    //        } else if (f.getTitref().toLowerCase().contains("web")) {
-    //            f.getThemes().add(new Theme("Web"));
-    //        } else {
-    //            f.getThemes().add(new Theme("UNDEFINED"));
-    //        }
-    Formation formation = mapper.toEntity(fDTO);
+
+    Formation formation = toEntity(fDTO);
+    if (formation == null) {
+      throw new IllegalStateException("L'entité Formation est null après la conversion.");
+    }
+    // Vérifier si l'entité existe déjà
+    if (formation.getIdFormation() != 0) {
+      Formation existingFormation = formationRepo.findById(formation.getIdFormation());
+      if (existingFormation != null) {
+        return toDTO(existingFormation);
+      }
+    }
+
+    // Persist la formation en premier
+    if (fDTO.getIdFormation() == 0 ) {
+      formationRepo.persist(formation);
+      formationRepo.flush();
+    }
+    // Assurer que la formation a bien un ID généré
+    if (formation.getIdFormation() == 0) {
+      throw new IllegalStateException("La formation n'a pas été persistée correctement.");
+    }
+
+    // Associer les sessions / thèmes / chapitres (si présents) à la formation persistée
+    if (fDTO.getSessions() != null) {
+      Set<Session> sessions = fDTO.getSessions().stream()
+              .map(sessionDTO -> {
+                Session session = new Session();
+                session.setIdSession(sessionDTO.getIdSession());
+                session.setFormation(formation);
+                return session;
+              })
+              .collect(Collectors.toSet());
+      formation.setSessions(sessions);
+    }
+    if (fDTO.getThemes() != null) {
+      Set<Theme> themes = fDTO.getThemes().stream()
+              .map(themeDTO -> {
+                Theme theme = new Theme();
+                theme.setIdTheme(themeDTO.getIdTheme());
+                theme.setFormation(formation);
+                return theme;
+              })
+              .collect(Collectors.toSet());
+      formation.setThemes(themes);
+    }
+    if (fDTO.getChapitres() != null) {
+      List<Chapitre> chapitres = fDTO.getChapitres().stream()
+              .map(chapitreDTO -> {
+                Chapitre chapitre = new Chapitre();
+                chapitre.setNomChapitre(chapitreDTO.getNomChapitre());
+                chapitre.setFormation(formation);
+                return chapitre;
+              })
+              .collect(Collectors.toList());
+      // Persister chaque chapitre après avoir associé la formation
+      //for (Chapitre chapitre : chapitres) {
+      //  formationRepo.persist(chapitre);
+      //}
+      formation.setChapitres(chapitres);
+    }
+
     formationRepo.persist(formation);
-    return mapper.toDTO(formation);
+
+    // Recharger la formation pour s'assurer qu'elle est bien persistée
+    Formation persistedFormation = formationRepo.findById(formation.getIdFormation());
+    if (persistedFormation == null) {
+      throw new IllegalStateException("La formation n'a pas été persistée correctement.");
+    }
+
+    return toDTO(formation);
   }
 
   @Transactional
@@ -54,17 +114,31 @@ public class FormationService {
   }
 
   @Transactional
-  public FormationDTO updateFormation(long id, FormationDTO fDTO) {
-    Formation formation = mapper.toEntity(fDTO);
-    formationRepo.persist(formation);
-    return mapper.toDTO(formation);
+  public FormationDTO updateFormation(long idFormation, FormationDTO fDTO) {
+    // Trouver l'entité existante
+    Formation formationExistante = formationRepo.findFormationByIdFormation(idFormation)
+            .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée pour l'ID: " + idFormation));
+
+    // Mettre à jour les champs de l'entité avec les valeurs du DTO
+    formationExistante.setReference(fDTO.getReference());
+    formationExistante.setTitref(fDTO.getTitref());
+    formationExistante.setLieu(fDTO.getLieu());
+    formationExistante.setDuree(fDTO.getDuree());
+    formationExistante.setPrerequis(fDTO.getPrerequis());
+    formationExistante.setObjectif(fDTO.getObjectif());
+    formationExistante.setPublicVise(fDTO.getPublicVise());
+    formationExistante.setProgrammeDetaille(fDTO.getProgrammeDetaille());
+
+    formationRepo.getEntityManager().merge(formationExistante);
+
+    return toDTO(formationExistante);
   }
 
   @Transactional
-  public FormationDTO findFormationById(long id) {
-    Formation formation = formationRepo.findFormationByIdFormation(id)
-            .orElseThrow(() -> new TrainingNotFoundException("Formation not found with id: " + id));
-    return mapper.toDTO(formation);
+  public FormationDTO findFormationById(long idFormation) {
+    Formation formation = formationRepo.findFormationByIdFormation(idFormation)
+            .orElseThrow(() -> new TrainingNotFoundException("Formation not found with id: " + idFormation));
+    return toDTO(formation);
   }
 
   @Transactional
@@ -92,17 +166,16 @@ public class FormationService {
     Formation formation = formationRepo
             .findFormationByReference(ref)
             .orElseThrow(() -> new TrainingNotFoundException("Training by reference " + ref + "was not found"));
-    return mapper.toDTO(formation);
+    return toDTO(formation);
   }
   @Transactional
-  public void deleteFormation(long id) {
-    formationRepo.deleteFormationByIdFormation(id);
+  public void deleteFormation(long idFormation) {
+    formationRepo.deleteFormationByIdFormation(idFormation);
   }
 
 
-  // Méthode de conversion d'une entité Formation en FormationDTO
+  // Conversion d'une entité Formation en FormationDTO
   private FormationDTO toDTO(Formation formation) {
-    // Conversion de l'entité Formation en DTO
     return new FormationDTO(
             formation.getIdFormation(),
             formation.getReference(),
@@ -119,47 +192,45 @@ public class FormationService {
             convertSessionsToDTOs(formation.getSessions())
             );
   }
-  // Méthode de conversion d'un DTO en entité Formation
-  public Formation toEntity(FormationDTO dto) {
+  // Conversion d'un DTO en entité Formation
+  public Formation toEntity(FormationDTO fDTO) {
     Formation formation = new Formation();
-    formation.setIdFormation(dto.getIdFormation());
-    formation.setReference(dto.getReference());
-    formation.setTitref(dto.getTitref());
-    formation.setLieu(dto.getLieu());
-    formation.setInterFormation(dto.getInterFormation());
-    formation.setDuree(dto.getDuree());
-    formation.setPrerequis(dto.getPrerequis());
-    formation.setObjectif(dto.getObjectif());
-    formation.setPublicVise(dto.getPublicVise());
-    formation.setProgrammeDetaille(dto.getProgrammeDetaille());
+    formation.setIdFormation(fDTO.getIdFormation());
+    formation.setReference(fDTO.getReference());
+    formation.setTitref(fDTO.getTitref());
+    formation.setLieu(fDTO.getLieu());
+    formation.setInterFormation(fDTO.getInterFormation());
+    formation.setDuree(fDTO.getDuree());
+    formation.setPrerequis(fDTO.getPrerequis());
+    formation.setObjectif(fDTO.getObjectif());
+    formation.setPublicVise(fDTO.getPublicVise());
+    formation.setProgrammeDetaille(fDTO.getProgrammeDetaille());
 
-    // Vous pouvez également mapper les ensembles de DTO vers les entités correspondantes
-    formation.setThemes(dto.getThemes().stream().map(this::mapThemeDTOToEntity).collect(Collectors.toSet()));
-    formation.setChapitres(dto.getChapitres().stream().map(this::mapChapitreDTOToEntity).collect(Collectors.toSet()));
-    formation.setSessions(dto.getSessions().stream().map(this::mapSessionDTOToEntity).collect(Collectors.toSet()));
+    // Mapper les DTO vers les entités correspondantes
+    formation.setThemes(fDTO.getThemes().stream().map(this::mapThemeDTOToEntity).collect(Collectors.toSet()));
+    formation.setChapitres(fDTO.getChapitres().stream().map(this::mapChapitreDTOToEntity).collect(Collectors.toList()));
+    formation.setSessions(fDTO.getSessions().stream().map(this::mapSessionDTOToEntity).collect(Collectors.toSet()));
 
     return formation;
     }
 
-  // Méthodes de conversion auxiliaires pour les sous-objets (Themes, Chapitres, Sessions, etc.)
+  // Conversion pour les sous-objets => Themes, Chapitres, Sessions
   private Theme mapThemeDTOToEntity(ThemeDTO dto) {
     Theme theme = new Theme();
     theme.setIdTheme(dto.getIdTheme());
     theme.setNomTheme(dto.getNomTheme());
-    // autres propriétés
+
     return theme;
   }
 
   private Chapitre mapChapitreDTOToEntity(ChapitreDTO dto) {
     Chapitre chapitre = new Chapitre();
-    chapitre.setIdChap(dto.getIdChap());
     chapitre.setNomChapitre(dto.getNomChapitre());
     return chapitre;
   }
 
   private Session mapSessionDTOToEntity(SessionDTO dto) {
     Session session = new Session();
-    session.setIdSession(dto.getIdSession());
     session.setDateDebut(dto.getDateDebut());
     session.setDateFin(dto.getDateFin());
     session.setLieu(dto.getLieu());
@@ -167,38 +238,32 @@ public class FormationService {
     return session;
   }
 
-  // Convert Set<Theme> to Set<ThemeDTO>
+  // Conversion Set
   private Set<ThemeDTO> convertThemesToDTOs(Set<Theme> themes) {
     return themes.stream()
             .map(this::toThemeDTO)
             .collect(Collectors.toSet());
   }
-
-  // Convert Set<Chapitre> to Set<ChapitreDTO>
-  private Set<ChapitreDTO> convertChapitresToDTOs(Set<Chapitre> chapitres) {
+  private List<ChapitreDTO> convertChapitresToDTOs(List<Chapitre> chapitres) {
     return chapitres.stream()
             .map(this::toChapitreDTO)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
   }
-
-  // Convert Set<Session> to Set<SessionDTO>
   private Set<SessionDTO> convertSessionsToDTOs(Set<Session> sessions) {
     return sessions.stream()
             .map(this::toSessionDTO)
             .collect(Collectors.toSet());
   }
 
-  // Convert Theme to ThemeDTO
+  // Conversion entité au DTO
   private ThemeDTO toThemeDTO(Theme theme) {
     return new ThemeDTO(theme.getIdTheme(), theme.getNomTheme());
   }
 
-  // Convert Chapitre to ChapitreDTO
   private ChapitreDTO toChapitreDTO(Chapitre chapitre) {
     return new ChapitreDTO(chapitre.getIdChap(), chapitre.getNomChapitre());
   }
 
-  // Convert Session to SessionDTO
   private SessionDTO toSessionDTO(Session session) {
     return new SessionDTO(session.getIdSession(), session.getDateDebut(), session.getDateFin(), session.getLieu());
   }

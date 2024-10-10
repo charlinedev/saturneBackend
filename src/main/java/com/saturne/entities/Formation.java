@@ -3,13 +3,9 @@ package com.saturne.entities;
 import org.hibernate.annotations.DynamicUpdate;
 
 import jakarta.persistence.*;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
 
-/*
- * Formations
- */
+import java.util.*;
+
 @Entity
 @Table(name = "trainings")
 @NamedNativeQuery(
@@ -24,7 +20,7 @@ public class Formation {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "idTraining")
+  @Column(name = "idFormation")
   private long idFormation;
 
   @Column(name = "ref")
@@ -61,15 +57,16 @@ public class Formation {
     joinColumns = @JoinColumn(name = "trainings_ID"),
     inverseJoinColumns = @JoinColumn(name = "themes_ID")
   )
-  private Set<Theme> themes = new HashSet<Theme>();
+  private Set<Theme> themes = new HashSet<>();
 
   // 1 formation <--> *chapitres //composition
-  @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "formation")
-  private Set<Chapitre> chapitres = new HashSet<Chapitre>();
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "formation", orphanRemoval = true)
+  private List<Chapitre> chapitres = new ArrayList<>();
+
 
   // 1 formation <--> * sessions
-  @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "formation", fetch = FetchType.EAGER)
-  private Set<Session> sessions = new HashSet<Session>();
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "formation", fetch = FetchType.EAGER)
+  private Set<Session> sessions = new HashSet<>();
 
   // 1 formation --> 1 preTest
   @OneToOne(cascade = CascadeType.PERSIST/*, fetch = FetchType.LAZY*/)
@@ -180,12 +177,15 @@ public class Formation {
     this.programmeDetaille = programmeDetaille;
   }
 
-  public Set<Chapitre> getChapitres() {
+  public List<Chapitre> getChapitres() {
     return chapitres;
   }
 
-  public void setChapitres(Set<Chapitre> chapitres) {
-    this.chapitres = chapitres;
+  public void setChapitres(List<Chapitre> chapitres) {
+    this.chapitres.clear();
+    if (chapitres != null) {
+      this.chapitres.addAll(chapitres);
+    }
   }
 
   public Set<Theme> getThemes() {

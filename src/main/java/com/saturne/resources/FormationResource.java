@@ -59,11 +59,6 @@ public class FormationResource {
     return Response.ok(formations).build();
   }
 
-  /***
-   *
-   * @param newf
-   * @return
-   */
   @POST
   @Path ("/add")
   @Consumes( MediaType.APPLICATION_JSON)

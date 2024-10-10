@@ -1,5 +1,7 @@
 package com.saturne.resources;
 
+import com.saturne.dto.FormationDTO;
+import com.saturne.dto.SessionDTO;
 import com.saturne.entities.Formation;
 import com.saturne.entities.Session;
 import com.saturne.services.FormationService;
@@ -74,23 +76,20 @@ public class SessionResource {
     }
   }
 
-  /***
-   * Create Session
-   * @param session
-   * @param idFormation
-   * @return Session
-   */
   @POST
   @Path("/add/{idFormation}")
   @Consumes ( MediaType.APPLICATION_JSON )
-  public Response createSession(Session session, @PathParam("idFormation") long idFormation) {
-    Formation f = formationService.findFormationById(idFormation);
-    log.trace("Found the training n°: " + idFormation + " => " + f);
+  public Response createSession(SessionDTO sessionDTO, @PathParam("idFormation") long idFormation) {
+    FormationDTO formationDTO = formationService.findFormationById(idFormation);
+    Formation formation = formationService.toEntity(formationDTO);
+    log.trace("Found the training n°: " + idFormation + " => " + formation);
     try {
       //System.out.println(session);
+      Session session = toEntity(sessionDTO);
+      session.setFormation(formation);
       session = sessionService.createSession(session);
       log.trace("session before update: " + session + "; " + session.getFormation());
-      session.setFormation(f);
+      session.setFormation(formation);
       sessionService.updateSession(session);
       log.trace("session after update: " + session + "; " + session.getFormation());
       return Response.status(Response.Status.CREATED).entity(session).build();
@@ -98,6 +97,17 @@ public class SessionResource {
       System.out.println(ex.getMessage());
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
+  }
+
+  private Session toEntity(SessionDTO sessionDTO) {
+    Session session = new Session();
+    session.setIdSession(sessionDTO.getIdSession());
+    session.setDateDebut(sessionDTO.getDateDebut());
+    session.setDateFin(sessionDTO.getDateFin());
+    session.setLieu(sessionDTO.getLieu());
+    session.setPrix(sessionDTO.getPrix());
+    // Assurez-vous de définir toutes les propriétés nécessaires
+    return session;
   }
 
   @PUT

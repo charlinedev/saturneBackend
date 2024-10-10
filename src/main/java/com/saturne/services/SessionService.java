@@ -43,7 +43,7 @@ public class SessionService {
   @Transactional
   public List<Session> getSessions(HashMap<String, Object> params) {
     Stream<Session> sessionsStream = sessionRepository.findAll().stream();
-    if (params.containsKey("idTraining")) {
+    if (params.containsKey("idFormation")) {
       sessionsStream =
         sessionsStream.filter(s -> {
           if (s.getFormation() != null) {

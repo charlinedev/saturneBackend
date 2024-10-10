@@ -1,5 +1,6 @@
 package com.saturne.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Objects;
@@ -26,6 +27,11 @@ public class Theme { // implements Serializable{
   //    @JoinColumn(name="idTheme")
   //	private Theme theme = new Theme();
 
+  @JsonIgnoreProperties("themes")
+  @ManyToOne(optional = true)
+  @JoinColumn(name = "idFormation")
+  private Formation formation;
+
   public Theme() {}
 
   //constructeur
@@ -47,6 +53,14 @@ public class Theme { // implements Serializable{
 
   public void setNomTheme(String nomTheme) {
     this.nomTheme = nomTheme;
+  }
+
+  public Formation getFormation() {
+    return formation;
+  }
+
+  public void setFormation(Formation formation) {
+    this.formation = formation;
   }
 
   public Set<Theme> getSousTheme() {

@@ -18,16 +18,11 @@ public class Chapitre {
   @Column(name = "content")
   private String contenu;
 
-  @ManyToOne
-  @JoinColumn(name = "idTraining")
-  private Formation formation = new Formation();
+  @ManyToOne(cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "idFormation", nullable = false)
+  private Formation formation;
 
   public Chapitre() {}
-
-  public Chapitre(String nomChapitre, String contenu) {
-    this.nomChapitre = nomChapitre;
-    this.contenu = contenu;
-  }
 
   public Chapitre(long idChap, String nomChapitre, String contenu) {
     this.idChap = idChap;

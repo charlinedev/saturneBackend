@@ -10,7 +10,6 @@ import java.util.Optional;
 @ApplicationScoped
 public class FormationRepository  implements PanacheRepository<Formation> {
 
-  //Optional<Formation> findFormationById(Long id);
   public Optional<Formation> findFormationByIdFormation(long idFormation) {
     return find("idFormation", idFormation).firstResultOptional();
   }

@@ -8,6 +8,10 @@ public class ThemeDTO {
     // Constructors, getters, and setters
     public ThemeDTO() {}
 
+    public ThemeDTO(String nomTheme) {
+        this.nomTheme = nomTheme;
+    }
+
     public ThemeDTO(long idTheme, String nomTheme) {
         this.idTheme = idTheme;
         this.nomTheme = nomTheme;
@@ -23,6 +27,10 @@ public class ThemeDTO {
 
     public String getNomTheme() {
         return nomTheme;
+    }
+
+    public void setNomTheme(String nomTheme) {
+        this.nomTheme = nomTheme;
     }
 
     public void setName(String nomTheme) {

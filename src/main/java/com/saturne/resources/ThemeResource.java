@@ -1,5 +1,6 @@
 package com.saturne.resources;
 
+import com.saturne.dto.ThemeDTO;
 import com.saturne.entities.Theme;
 import com.saturne.services.ThemeService;
 import jakarta.inject.Inject;
@@ -22,16 +23,16 @@ public class ThemeResource {
   @GET
   @Path ("/all")
   public Response getAllThemes() {
-    List<Theme> themes = ts.findAllThemes();
+    List<ThemeDTO> themes = ts.findAllThemes();
     return Response.ok(themes).build();
   }
 
   @GET
   @Path ("findbyId/{id}")
   public Response getThemeById(@PathParam("id") long id) {
-    Theme theme = ts.findThemeById(id);
-    if (theme != null) {
-      return Response.ok(theme).build();
+    ThemeDTO themeDTO = ts.findThemeById(id);
+    if (themeDTO != null) {
+      return Response.ok(themeDTO).build();
     } else {
       return Response.status(Response.Status.NOT_FOUND).entity("Theme not found").build();
     }

@@ -7,9 +7,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
 
-/*
- * Sessions
- */
 @Entity
 @Table(name = "sessions")
 public class Session { // implements Serializable{??
@@ -36,8 +33,8 @@ public class Session { // implements Serializable{??
   private Salle salle;
 
   @JsonIgnoreProperties("sessions")
-  @ManyToOne(optional = true)
-  @JoinColumn(name = "idTraining")
+  @ManyToOne(optional = true, cascade = CascadeType.PERSIST)
+  @JoinColumn(name = "idFormation")
   private Formation formation;
 
   @ManyToOne

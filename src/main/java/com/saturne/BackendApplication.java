@@ -1,5 +1,6 @@
 package com.saturne;
 
+import com.saturne.dto.ChapitreDTO;
 import com.saturne.dto.FormationDTO;
 import com.saturne.dto.ThemeDTO;
 import com.saturne.entities.Catalogue;
@@ -58,6 +59,7 @@ public class BackendApplication {
         }
 
         private void demo() {
+
             formationService.addFormation(
                     new FormationDTO(
                             101,
@@ -159,24 +161,23 @@ public class BackendApplication {
         ;
 
         private void demo3() {
-            themeService.addTheme(new Theme("Développement"));
-            themeService.addTheme(new Theme("Big Data, Data Science et IA"));
-            themeService.addTheme(new Theme("Informatique décicionnelle"));
-            themeService.addTheme(new Theme("Bases de données"));
-            themeService.addTheme(new Theme("Réseaux et Télécoms"));
-            themeService.addTheme(new Theme("Cybersécurité"));
-            themeService.addTheme(new Theme("Cloud computing"));
-            themeService.addTheme(new Theme("Virtualisation"));
-            themeService.addTheme(new Theme("Windows et System Center"));
-            themeService.addTheme(new Theme("Linux, Unix, Mac"));
-            themeService.addTheme(new Theme("Solutions collaboratives Microsoft"));
-            themeService.addTheme(new Theme("IBM"));
-            themeService.addTheme(new Theme("SAP"));
-            themeService.addTheme(new Theme("Tests"));
-            themeService.addTheme(new Theme("Développement web et mobilité"));
-            themeService.addTheme(new Theme("IoT, Systèmes embarquées, Robotic Process Automation"));
-            themeService.addTheme(new Theme("DevOps, industrialisation et gestion de production"));
-            themeService.addTheme(new Theme("PAO, CAO, DAO, BIM"));
+            themeService.addTheme(new ThemeDTO("Développement"));
+            themeService.addTheme(new ThemeDTO("Big Data, Data Science et IA"));
+            themeService.addTheme(new ThemeDTO("Informatique décisionnelle"));
+            themeService.addTheme(new ThemeDTO("Bases de données"));
+            themeService.addTheme(new ThemeDTO("Cybersécurité"));
+            themeService.addTheme(new ThemeDTO("Cloud computing"));
+            themeService.addTheme(new ThemeDTO("Virtualisation"));
+            themeService.addTheme(new ThemeDTO("Windows et System Center"));
+            themeService.addTheme(new ThemeDTO("Linux, Unix, Mac"));
+            themeService.addTheme(new ThemeDTO("Solutions collaboratives Microsoft"));
+            themeService.addTheme(new ThemeDTO("IBM"));
+            themeService.addTheme(new ThemeDTO("SAP"));
+            themeService.addTheme(new ThemeDTO("Tests"));
+            themeService.addTheme(new ThemeDTO("Développement web et mobilité"));
+            themeService.addTheme(new ThemeDTO("IoT, Systèmes embarqués, Robotic Process Automation"));
+            themeService.addTheme(new ThemeDTO("DevOps, industrialisation et gestion de production"));
+            themeService.addTheme(new ThemeDTO("PAO, CAO, DAO, BIM"));
             // fetch all Themes
             log.info("Themes found with findAllThemes():");
             log.info("-------------------------------");

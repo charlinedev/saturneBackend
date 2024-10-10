@@ -4,10 +4,8 @@ public class ChapitreDTO {
     private long idChap;
     private String nomChapitre;
 
-    // Constructors, getters, and setters
+    // Constructeurs, getters, et setters
     public ChapitreDTO() {}
-
-
 
     public ChapitreDTO(long idChap, String nomChapitre) {
         this.idChap = idChap;
